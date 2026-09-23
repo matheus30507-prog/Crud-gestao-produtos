@@ -12,7 +12,12 @@
 			header("Location: gestao.php"); 
 			exit; 
 		} catch (PDOException $e) { 
-			$erro = "E-mail já cadastrado."; 
+			if ($e->getCode() == 23000) {
+        		$erro = "E-mail já cadastrado.";
+    		} 
+    		else {
+        		$erro = "Erro ao cadastrar. Tente novamente.";
+    		}
 		} 
 	} 
 ?>
