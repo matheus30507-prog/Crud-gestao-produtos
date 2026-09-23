@@ -26,51 +26,41 @@ if (!isset($_SESSION["usuario_id"])) {
             </div>
         </div>
     </nav>
-    <div class="container my-4">
-        
-        <ul class="nav nav-tabs fw-bold" id="sistemaTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="cadastros-tab" data-bs-toggle="tab" data-bs-target="#cadastros" type="button" role="tab">
-                    1. Cadastros
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="ajax-tab" data-bs-toggle="tab" data-bs-target="#ajax" type="button" role="tab">
-                    2. Área AJAX
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="selecao-tab" data-bs-toggle="tab" data-bs-target="#selecao" type="button" role="tab">
-                    3. Seleção
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="cesta-tab" data-bs-toggle="tab" data-bs-target="#cesta" type="button" role="tab">
-                    4. Cesta de Compras
-                </button>
-            </li>
-        </ul>
+    <div class="container mt-5">
 
-        <div class="tab-content bg-white p-4 border border-top-0 rounded-bottom shadow-sm">
-            
-            <div class="tab-pane fade show active" id="cadastros" role="tabpanel">
-                <h4 class="mb-3">Área de Cadastros</h4>
-            </div>
+    <h2 class="text-center mb-4">
+        Sistema de Gestão de Produtos
+    </h2>
 
-            <div class="tab-pane fade" id="ajax" role="tabpanel">
-                <h4 class="mb-3">Área AJAX</h4>
-            </div>
+    <div class="row g-3">
 
-            <div class="tab-pane fade" id="selecao" role="tabpanel">
-                <h4 class="mb-3">Seleção de Produtos</h4>
-            </div>
-
-            <div class="tab-pane fade" id="cesta" role="tabpanel">
-                <h4 class="mb-3">Resumo da Cesta</h4>
-            </div>
-
+        <div class="col-md-6">
+            <a href="fornecedor.php" class="btn btn-primary w-100 p-3">
+                Cadastros
+            </a>
         </div>
+
+        <div class="col-md-6">
+            <a href="ajax.php" class="btn btn-warning w-100 p-3">
+                Atualizar dados
+            </a>
+        </div>
+
+        <div class="col-md-6">
+            <a href="produto.php" class="btn btn-success w-100 p-3">
+                Selecionar produtos
+            </a>
+        </div>
+
+        <div class="col-md-6">
+            <a href="cesta.php" class="btn btn-info w-100 p-3">
+                Minha cesta
+            </a>
+        </div>
+
     </div>
+
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
