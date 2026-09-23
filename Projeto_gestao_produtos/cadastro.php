@@ -39,6 +39,14 @@ try {
 			$stmt->execute([$email, $senhaHash]);
 
 			echo "Usuário cadastrado com sucesso!";
+
+			$usuarioLogado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+			$_SESSION["usuario_id"] = $usuarioLogado["id"];
+            $_SESSION["usuario_email"] = $usuarioLogado["email"];
+
+            header("Location: gestao.php");
+            exit;
 		}
 	}
 

@@ -1,4 +1,6 @@
 <?php 
+session_start();
+
 $servidor = "localhost"; 
 $usuario = "root"; 
 $senhaBanco = "";
@@ -19,6 +21,32 @@ try {
             senha VARCHAR(255) NOT NULL 
         ) "
     );
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST") { 
+        $email = $_POST["email"]; 
+        $senha = $_POST["senha"];
+
+        $senhaHash = hash("sha256", $senha);
+
+        $sql = "SELECT id FROM usuarios WHERE email = ? AND senha = ?"; 
+        $stmt = $conexao->prepare($sql); 
+        $stmt->execute([$email, $senhaHash]);
+
+        if($stmt->rowCount() > 0){
+            $usuarioLogado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $_SESSION["usuario_id"] = $usuarioLogado["id"];
+            $_SESSION["usuario_email"] = $usuarioLogado["email"];
+
+            header("Location: gestao.php");
+            exit;
+        }
+        else{
+            header("Location: gestao.php");
+            exit;
+            echo "Usuário ou senha inválidos!";
+        }
+    }
 
 } catch (PDOException $e) {
     echo "Erro: " . $e->getMessage();
