@@ -22,7 +22,7 @@ if (!isset($_SESSION["usuario_id"])) {
             <a class="navbar-brand fw-bold" href="#">Gestão de Produtos</a>
             <div class="d-flex align-items-center text-white">
                 <span class="me-3">Olá, <strong><?php echo htmlspecialchars($_SESSION["usuario_email"]); ?></strong></span>
-                <a href="logout.php" class="btn btn-outline-danger btn-sm">Sair</a>
+                <a href="saida.php" class="btn btn-outline-danger btn-sm">Sair</a>
             </div>
         </div>
     </nav>
