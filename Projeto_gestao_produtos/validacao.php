@@ -42,9 +42,9 @@ try {
             exit;
         }
         else{
-            header("Location: gestao.php");
+            $_SESSION["erro"] = "E-mail ou senha incorretos!";
+            header("Location: index.php");
             exit;
-            echo "Usuário ou senha inválidos!";
         }
     }
 
