@@ -40,6 +40,6 @@ form {
 	width: 100%;
 
 	#botao:hover {
-	color: #3498db; /* Nova cor quando o mouse está em cima (um azul mais forte) */
-    text-decoration: underline; /* Opcional: adiciona sublinhado no hover */
+	color: #3498db;
+    text-decoration: underline; 
 }

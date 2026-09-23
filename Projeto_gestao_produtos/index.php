@@ -8,7 +8,7 @@
 </head>
 <body>
 	<div id="cont">
-		<form action="/validacao.php" method="POST">
+		<form action="validacao.php" method="POST">
 			<h1>Gestão de Produtos</h1>
 			<br>
 			<div>
