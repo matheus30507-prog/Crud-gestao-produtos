@@ -7,7 +7,7 @@
 	<title></title>
 </head>
 <body>
-	<div id="cont">
+	<div class="cont">
 		<form action="validacao.php" method="POST">
 			<h1>Gestão de Produtos</h1>
 			<br>
