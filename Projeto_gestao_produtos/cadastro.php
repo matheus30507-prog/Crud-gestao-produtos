@@ -1,4 +1,6 @@
 <?php 
+session_start();
+
 $servidor = "localhost"; 
 $usuario = "root"; 
 $senhaBanco = "";
@@ -40,10 +42,10 @@ try {
 
 			echo "Usuário cadastrado com sucesso!";
 
-			$usuarioLogado = $stmt->fetch(PDO::FETCH_ASSOC);
+			$novoId = $conexao->lastInsertId();
 
-			$_SESSION["usuario_id"] = $usuarioLogado["id"];
-            $_SESSION["usuario_email"] = $usuarioLogado["email"];
+            $_SESSION["usuario_id"] = $novoId;
+            $_SESSION["usuario_email"] = $email;
 
             header("Location: gestao.php");
             exit;
