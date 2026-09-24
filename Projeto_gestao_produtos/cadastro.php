@@ -1,25 +1,27 @@
 <?php session_start();
-	require "conexao.php"; 
-	if ($_SERVER["REQUEST_METHOD"] == "POST") { 
-		$email = $_POST["email"]; 
-		$senha = $_POST["senha"]; 
-		$senhaHash = hash("sha256", $senha); 
+	require "conexao.php";
 
-		try { 
-			$sql = "INSERT INTO usuarios (email, senha) VALUES (?, ?)"; 
-			$stmt = $conexao->prepare($sql); 
-			$stmt->execute([ $email, $senhaHash ]); 
-			header("Location: gestao.php"); 
-			exit; 
-		} catch (PDOException $e) { 
+	if ($_SERVER["REQUEST_METHOD"] == "POST") {
+		$usuario = new Usuario($_POST["email"]);
+
+		try {
+			$usuario->cadastrar($conexao, $_POST["senha"]);
+
+			// já deixa o usuário logado após o cadastro
+			$_SESSION["usuario_id"] = $usuario->getId();
+			$_SESSION["usuario_email"] = $usuario->getEmail();
+
+			header("Location: gestao.php");
+			exit;
+		} catch (PDOException $e) {
 			if ($e->getCode() == 23000) {
         		$erro = "E-mail já cadastrado.";
-    		} 
+    		}
     		else {
         		$erro = "Erro ao cadastrar. Tente novamente.";
     		}
-		} 
-	} 
+		}
+	}
 ?>
 
 <!DOCTYPE html>
