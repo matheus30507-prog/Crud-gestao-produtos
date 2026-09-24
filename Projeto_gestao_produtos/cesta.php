@@ -6,29 +6,20 @@ if (!isset($_SESSION["usuario_id"])) {
 }
 require "conexao.php";
 
-$usuarioId = $_SESSION["usuario_id"];
+$usuario = new Usuario($_SESSION["usuario_email"], (int) $_SESSION["usuario_id"]);
+$cesta = new Cesta($usuario);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $stmt = $conexao->prepare("DELETE FROM cesta_itens WHERE usuario_id = ? AND produto_id = ?");
-    $stmt->execute([$usuarioId, (int) ($_POST["produto_id"] ?? 0)]);
+    $cesta->remover($conexao, (int) ($_POST["produto_id"] ?? 0));
     $_SESSION["msg"] = ["warning", "Produto removido da cesta."];
     header("Location: cesta.php");
     exit;
 }
 
-$stmt = $conexao->prepare(
-    "SELECT p.id, p.nome, p.preco, f.nome AS fornecedor
-     FROM cesta_itens c
-     JOIN produtos p ON p.id = c.produto_id
-     JOIN fornecedores f ON f.id = p.fornecedor_id
-     WHERE c.usuario_id = ?
-     ORDER BY p.nome"
-);
-$stmt->execute([$usuarioId]);
-$itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$quantidade = count($itens);
-$total = array_sum(array_column($itens, "preco"));
+$cesta->carregar($conexao);
+$itens = $cesta->getItens();
+$quantidade = $cesta->quantidade();
+$total = $cesta->total();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -76,12 +67,12 @@ $total = array_sum(array_column($itens, "preco"));
                         <tbody>
                         <?php foreach ($itens as $p): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($p["nome"]); ?></td>
-                                <td><?php echo htmlspecialchars($p["fornecedor"]); ?></td>
-                                <td>R$ <?php echo number_format($p["preco"], 2, ",", "."); ?></td>
+                                <td><?php echo htmlspecialchars($p->getNome()); ?></td>
+                                <td><?php echo htmlspecialchars($p->getFornecedor()->getNome()); ?></td>
+                                <td>R$ <?php echo number_format($p->getPreco(), 2, ",", "."); ?></td>
                                 <td>
                                     <form method="POST">
-                                        <input type="hidden" name="produto_id" value="<?php echo $p["id"]; ?>">
+                                        <input type="hidden" name="produto_id" value="<?php echo $p->getId(); ?>">
                                         <button class="btn btn-sm btn-outline-danger">Remover</button>
                                     </form>
                                 </td>
