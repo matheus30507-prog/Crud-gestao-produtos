@@ -6,7 +6,8 @@ if (!isset($_SESSION["usuario_id"])) {
 }
 require "conexao.php";
 
-$usuarioId = $_SESSION["usuario_id"];
+$usuario = new Usuario($_SESSION["usuario_email"], (int) $_SESSION["usuario_id"]);
+$cesta = new Cesta($usuario);
 $minimo = 2;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -19,31 +20,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    $stmt = $conexao->prepare(
-        "INSERT IGNORE INTO cesta_itens (usuario_id, produto_id)
-         SELECT ?, id FROM produtos WHERE id = ?"
-    );
-    $adicionados = 0;
-    foreach ($selecionados as $produtoId) {
-        $stmt->execute([$usuarioId, $produtoId]);
-        $adicionados += $stmt->rowCount();
-    }
+    $adicionados = $cesta->adicionar($conexao, $selecionados);
 
     $_SESSION["msg"] = ["success", "$adicionados produto(s) adicionado(s) à cesta!"];
     header("Location: cesta.php");
     exit;
 }
 
-$produtos = $conexao->query(
-    "SELECT p.id, p.nome, p.preco, f.nome AS fornecedor
-     FROM produtos p
-     JOIN fornecedores f ON f.id = p.fornecedor_id
-     ORDER BY p.nome"
-)->fetchAll(PDO::FETCH_ASSOC);
+$produtos = Produto::listar($conexao);
 
-$stmt = $conexao->prepare("SELECT produto_id FROM cesta_itens WHERE usuario_id = ?");
-$stmt->execute([$usuarioId]);
-$naCesta = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$cesta->carregar($conexao);
+$naCesta = $cesta->idsProdutos();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -88,19 +75,19 @@ $naCesta = $stmt->fetchAll(PDO::FETCH_COLUMN);
                     </thead>
                     <tbody>
                     <?php foreach ($produtos as $p):
-                        $jaNaCesta = in_array($p["id"], $naCesta); ?>
+                        $jaNaCesta = in_array($p->getId(), $naCesta); ?>
                         <tr>
                             <td>
                                 <input type="checkbox" class="form-check-input chk" name="produtos[]"
-                                       value="<?php echo $p["id"]; ?>"
+                                       value="<?php echo $p->getId(); ?>"
                                        <?php echo $jaNaCesta ? "checked disabled" : ""; ?>>
                             </td>
                             <td>
-                                <?php echo htmlspecialchars($p["nome"]); ?>
+                                <?php echo htmlspecialchars($p->getNome()); ?>
                                 <?php if ($jaNaCesta): ?><span class="badge bg-secondary ms-1">Já na cesta</span><?php endif; ?>
                             </td>
-                            <td><?php echo htmlspecialchars($p["fornecedor"]); ?></td>
-                            <td>R$ <?php echo number_format($p["preco"], 2, ",", "."); ?></td>
+                            <td><?php echo htmlspecialchars($p->getFornecedor()->getNome()); ?></td>
+                            <td>R$ <?php echo number_format($p->getPreco(), 2, ",", "."); ?></td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>

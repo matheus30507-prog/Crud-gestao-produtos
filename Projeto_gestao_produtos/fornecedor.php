@@ -11,48 +11,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         if ($acao == "novo_fornecedor") {
-            $nome     = trim($_POST["nome"] ?? "");
-            $cnpj     = preg_replace('/\D/', '', $_POST["cnpj"] ?? "");
-            $telefone = trim($_POST["telefone"] ?? "");
-
-            if ($nome == "") {
-                throw new Exception("Informe o nome do fornecedor.");
-            }
-            if (strlen($cnpj) != 14) {
-                throw new Exception("O CNPJ deve ter 14 dígitos.");
-            }
-
-            $stmt = $conexao->prepare("INSERT INTO fornecedores (nome, cnpj, telefone) VALUES (?, ?, ?)");
-            $stmt->execute([$nome, $cnpj, $telefone]);
+            $fornecedor = new Fornecedor(
+                $_POST["nome"] ?? "",
+                $_POST["cnpj"] ?? "",
+                $_POST["telefone"] ?? ""
+            );
+            $fornecedor->salvar($conexao);
             $_SESSION["msg"] = ["success", "Fornecedor cadastrado com sucesso!"];
 
         } elseif ($acao == "novo_produto") {
-            $nome          = trim($_POST["nome"] ?? "");
-            $preco         = (float) ($_POST["preco"] ?? 0);
-            $fornecedor_id = (int) ($_POST["fornecedor_id"] ?? 0);
-
-            if ($nome == "") {
-                throw new Exception("Informe o nome do produto.");
-            }
-            if ($preco <= 0) {
-                throw new Exception("O preço deve ser maior que zero.");
-            }
-            if ($fornecedor_id <= 0) {
-                throw new Exception("Selecione um fornecedor.");
-            }
-
-            $stmt = $conexao->prepare("INSERT INTO produtos (nome, preco, fornecedor_id) VALUES (?, ?, ?)");
-            $stmt->execute([$nome, $preco, $fornecedor_id]);
+            $fornecedor = Fornecedor::buscar($conexao, (int) ($_POST["fornecedor_id"] ?? 0));
+            $produto = new Produto(
+                $_POST["nome"] ?? "",
+                (float) ($_POST["preco"] ?? 0),
+                $fornecedor
+            );
+            $produto->salvar($conexao);
             $_SESSION["msg"] = ["success", "Produto cadastrado com sucesso!"];
 
         } elseif ($acao == "excluir_fornecedor") {
-            $stmt = $conexao->prepare("DELETE FROM fornecedores WHERE id = ?");
-            $stmt->execute([(int) ($_POST["id"] ?? 0)]);
+            Fornecedor::excluir($conexao, (int) ($_POST["id"] ?? 0));
             $_SESSION["msg"] = ["warning", "Fornecedor excluído (os produtos dele também)."];
 
         } elseif ($acao == "excluir_produto") {
-            $stmt = $conexao->prepare("DELETE FROM produtos WHERE id = ?");
-            $stmt->execute([(int) ($_POST["id"] ?? 0)]);
+            Produto::excluir($conexao, (int) ($_POST["id"] ?? 0));
             $_SESSION["msg"] = ["warning", "Produto excluído."];
         }
     } catch (PDOException $e) {
@@ -69,14 +51,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     exit;
 }
 
-$fornecedores = $conexao->query("SELECT * FROM fornecedores ORDER BY nome")->fetchAll(PDO::FETCH_ASSOC);
-
-$produtos = $conexao->query(
-    "SELECT p.id, p.nome, p.preco, f.nome AS fornecedor
-     FROM produtos p
-     JOIN fornecedores f ON f.id = p.fornecedor_id
-     ORDER BY p.nome"
-)->fetchAll(PDO::FETCH_ASSOC);
+$fornecedores = Fornecedor::listar($conexao);
+$produtos = Produto::listar($conexao);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -156,7 +132,7 @@ $produtos = $conexao->query(
                                 <select name="fornecedor_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($fornecedores as $f): ?>
-                                        <option value="<?php echo $f["id"]; ?>"><?php echo htmlspecialchars($f["nome"]); ?></option>
+                                        <option value="<?php echo $f->getId(); ?>"><?php echo htmlspecialchars($f->getNome()); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -181,13 +157,13 @@ $produtos = $conexao->query(
             <tbody>
             <?php foreach ($fornecedores as $f): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($f["nome"]); ?></td>
-                    <td><?php echo htmlspecialchars($f["cnpj"]); ?></td>
-                    <td><?php echo htmlspecialchars($f["telefone"] ?? ""); ?></td>
+                    <td><?php echo htmlspecialchars($f->getNome()); ?></td>
+                    <td><?php echo htmlspecialchars($f->getCnpj()); ?></td>
+                    <td><?php echo htmlspecialchars($f->getTelefone()); ?></td>
                     <td>
                         <form method="POST" onsubmit="return confirm('Excluir este fornecedor e todos os seus produtos?');">
                             <input type="hidden" name="acao" value="excluir_fornecedor">
-                            <input type="hidden" name="id" value="<?php echo $f["id"]; ?>">
+                            <input type="hidden" name="id" value="<?php echo $f->getId(); ?>">
                             <button class="btn btn-sm btn-outline-danger">Excluir</button>
                         </form>
                     </td>
@@ -209,13 +185,13 @@ $produtos = $conexao->query(
             <tbody>
             <?php foreach ($produtos as $p): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($p["nome"]); ?></td>
-                    <td>R$ <?php echo number_format($p["preco"], 2, ",", "."); ?></td>
-                    <td><?php echo htmlspecialchars($p["fornecedor"]); ?></td>
+                    <td><?php echo htmlspecialchars($p->getNome()); ?></td>
+                    <td>R$ <?php echo number_format($p->getPreco(), 2, ",", "."); ?></td>
+                    <td><?php echo htmlspecialchars($p->getFornecedor()->getNome()); ?></td>
                     <td>
                         <form method="POST" onsubmit="return confirm('Excluir este produto?');">
                             <input type="hidden" name="acao" value="excluir_produto">
-                            <input type="hidden" name="id" value="<?php echo $p["id"]; ?>">
+                            <input type="hidden" name="id" value="<?php echo $p->getId(); ?>">
                             <button class="btn btn-sm btn-outline-danger">Excluir</button>
                         </form>
                     </td>
